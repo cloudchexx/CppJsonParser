@@ -1,0 +1,8 @@
+[
+{
+  "directory": "E:/C_plus_plus/build",
+  "command": "D:\\bianyiqi\\mingw64\\bin\\g++.exe  @CMakeFiles/CppJsonParser.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\CppJsonParser.dir\\test_main.cpp.obj -c E:\\C_plus_plus\\test_main.cpp",
+  "file": "E:/C_plus_plus/test_main.cpp",
+  "output": "CMakeFiles/CppJsonParser.dir/test_main.cpp.obj"
+}
+]

@@ -1,0 +1,3 @@
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E rm -f CMakeFiles\CppJsonParser.dir/objects.a
+D:\bianyiqi\mingw64\bin\ar.exe qc CMakeFiles\CppJsonParser.dir/objects.a @CMakeFiles\CppJsonParser.dir\objects1.rsp
+D:\bianyiqi\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\CppJsonParser.dir/objects.a -Wl,--no-whole-archive -o CppJsonParser.exe -Wl,--out-implib,libCppJsonParser.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\CppJsonParser.dir\linkLibs.rsp
