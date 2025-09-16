@@ -21,7 +21,4 @@
 3. 生成的可执行文件在 build 目录下。
 
 ## 工作流
-1. 输入原始JSON串到令牌分析器
-2. 分割成一段一段的JSON_object字符串数组
-3. 将JSON_object字符串数组放入Parser（语法解析器）中生成相应的JSON对象
-4. 注意，最小单元的JSON对象是null，bool，number之类的，array以及object的JSON对象不是最小单元，所以还将其JSON_object字符串放入令牌解析器中解析，再放入Parser中生成JSON对象，知道最后一个最小单元被完成（这个过程是递归实现）
+我们需要确认工作流，使用两个栈来实现解析JSON对象

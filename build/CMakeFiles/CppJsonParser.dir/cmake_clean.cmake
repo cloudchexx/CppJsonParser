@@ -1,6 +1,10 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/CppJsonParser.dir/test_main.cpp.obj"
-  "CMakeFiles/CppJsonParser.dir/test_main.cpp.obj.d"
+  "CMakeFiles/CppJsonParser.dir/src/JSONValue.cpp.obj"
+  "CMakeFiles/CppJsonParser.dir/src/JSONValue.cpp.obj.d"
+  "CMakeFiles/CppJsonParser.dir/src/JSONparser.cpp.obj"
+  "CMakeFiles/CppJsonParser.dir/src/JSONparser.cpp.obj.d"
+  "CMakeFiles/CppJsonParser.dir/src/main.cpp.obj"
+  "CMakeFiles/CppJsonParser.dir/src/main.cpp.obj.d"
   "CppJsonParser.exe"
   "CppJsonParser.exe.manifest"
   "CppJsonParser.pdb"

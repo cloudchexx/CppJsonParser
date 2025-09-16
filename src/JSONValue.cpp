@@ -1,46 +1,98 @@
 #include "JSONValue.h"
 
-// JSONValue 类的实现
-// JSONValue构造函数
-JSONValue::JSONValue(std::string& json)
-: JsonString{std::move(json)} // 默认初始化为一个空的 JSON 对象字符串
+// JSONValue类的实现
+JSONValue::JSONValue(){}
+void JSONValue::setvalueandtype(JSONVariant val, JSONType t) {
+    value = std::move(val);
+    type = t;
+}
+JSONType JSONValue::gettype() const {
+    return type;
+}
+const JSONVariant& JSONValue::getValue() const {
+    return value;
+}
+std::ostream& operator<<(std::ostream& os, const JSONValue& json){
+    switch (json.gettype()) {
+        case JSONType::JSON_Null:
+            os << "null";
+            break;
+        case JSONType::JSON_Boolean:
+            os << (std::get<bool>(json.getValue()) ? "true" : "false");
+            break;
+        case JSONType::JSON_Number:
+            os << std::get<double>(json.getValue());
+            break;
+        case JSONType::JSON_String:
+            os << "\"" << std::get<std::string>(json.getValue()) << "\"";
+            break;
+        case JSONType::JSON_Array: {
+            os << "[";
+            const auto& arr = std::get<std::vector<std::unique_ptr<JSONValue>>>(json.getValue());
+            for (size_t i = 0; i < arr.size(); ++i) {
+                if (i > 0) os << ", ";
+                os << *(arr[i]);
+            }
+            os << "]";
+            break;
+        }
+        case JSONType::JSON_Object: {
+            os << "{";
+            const auto& obj = std::get<std::map<std::string , std::unique_ptr<JSONValue>>>(json.getValue());
+            size_t count = 0;
+            for (const auto& [key, val] : obj) {
+                if (count++ > 0) os << ", ";
+                os << "\"" << key << "\": " << *val;
+            }
+            os << "}";
+            break;
+        }
+        default:
+            os << "undefined";
+    }
+    return os;
+}
+
+
+// JSONBoolean类的实现
+JSONBoolean::JSONBoolean(bool b)
 {
-    std::cout << "We create a JSONValue" << std::endl;
+    setvalueandtype(b, JSONType::JSON_Boolean);
 }
-
-std::string_view JSONValue::get_JSONString() const {
-    return JsonString; // 返回存储的 JSON 字符串
-}
-
-// JSON_Null 类的实现
-// 构造函数 构造JSON_Null对象
-JSON_Null::JSON_Null(std::string& json)
-: JSONValue{std::move(json)} // 调用基类构造函数初始化 JSONValue 部分
+// JSONNumber类的实现
+JSONNumber::JSONNumber(double num)
 {
-    std::cout << "We create a JSON_Null" << std::endl;
+    setvalueandtype(num, JSONType::JSON_Number);
 }
-// 获取 JSON 值的类型
-JSONValue::JSONType JSON_Null::getType() const {
-    return JSONType::JSON_Null; // 返回 JSON_Null 类型
-}
-std::unique_ptr<JSONValue> JSON_Null::asValue_of_JSON() const {
-    return std::make_unique<JSON_Null>(*this); // 返回一个新的 JSON_Null 对象
-}
-
-// JSON_Boolean 类的实现
-// 构造函数 构造JSON_Boolean对象
-JSON_Boolean::JSON_Boolean(std::string& json , bool val)
-: JSONValue(json)
-, value{val} // 初始化布尔值
+// JSONString类的实现
+JSONString::JSONString(const std::string& str)
 {
-    std::cout << "We create a JSON_Boolean" << std::endl;
+    setvalueandtype(str, JSONType::JSON_String);
 }
-// 获取 JSON 值的类型
-JSONValue::JSONType JSON_Boolean::getType() const {
-    return JSONType::JSON_Boolean; // 返回 JSON_Boolean 类型
+// JOSONArray类的实现
+JSONArray::JSONArray(std::vector<std::unique_ptr<JSONValue>>& arr)
+{
+    setvalueandtype(std::move(arr), JSONType::JSON_Array);
 }
-std::unique_ptr<JSONValue> JSON_Boolean::asValue_of_JSON() const {
-    return std::make_unique<JSON_Boolean>(*this); // 返回一个新的 JSON_Boolean 对象
+void JSONArray::append(std::unique_ptr<JSONValue> value) {
+    if (gettype() == JSONType::JSON_Array) {
+        auto& arr = std::get<std::vector<std::unique_ptr<JSONValue>>>(const_cast<JSONVariant&>(getValue()));
+        arr.push_back(std::move(value));
+    }
 }
-
-// 暂时没有写完
+// JSONObject类的实现
+JSONObject::JSONObject(std::map<std::string , std::unique_ptr<JSONValue>>& obj)
+{
+    setvalueandtype(std::move(obj), JSONType::JSON_Object);
+}
+void JSONObject::insert(const std::string& key, std::unique_ptr<JSONValue> value) {
+    if (gettype() == JSONType::JSON_Object) {
+        auto& obj = std::get<std::map<std::string , std::unique_ptr<JSONValue>>>(const_cast<JSONVariant&>(getValue()));
+        obj[key] = std::move(value);
+    }
+}
+// JSONNull类的实现
+JSONNull::JSONNull()
+{
+    setvalueandtype(std::monostate{}, JSONType::JSON_Null);
+}

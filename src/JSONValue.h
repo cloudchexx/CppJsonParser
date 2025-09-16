@@ -6,105 +6,100 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <variant>
+
+enum JSONType {
+    JSON_Void,  // 无效值
+    JSON_Null,  // 空值
+    JSON_Boolean,  // 布尔值
+    JSON_Number,  // 数值
+    JSON_String,  // 字符串
+    JSON_Array,  // 数组
+    JSON_Object  // 对象
+};
+
+// 前向声明，供Array和Object使用
+class JSONValue;
+
+// 定义数组和对象的元素类型
+// using JSONArray = std::vector<std::unique_ptr<JSONValue>>;
+// using JSONObject = std::map<std::string, std::unique_ptr<JSONValue>>;
+
+// 定义value的可能类型（variant支持的类型列表）
+using JSONVariant = std::variant<
+    // 初始化对象时的默认值
+    
+    std::monostate,   // 对应Null（占位用）
+    bool,             // 对应Bool
+    double,           // 对应Number（统一存储整数和浮点数）
+    std::string,      // 对应String
+    std::vector<std::unique_ptr<JSONValue>>,        // 对应Array
+    std::map<std::string , std::unique_ptr<JSONValue>>        // 对应Object
+>;
 
 // JSON数据的基类
 class JSONValue
 {
-
 private:
-    // 私有成员变量和方法
-    std::string JsonString; // 存储原始 JSON 字符串
-
+    JSONVariant value; // JSON数据的值
+    JSONType type{JSONType::JSON_Void}; // JSON数据的类型
 public:
+    JSONValue(); // 默认构造函数
+    ~JSONValue() = default;  // 确保派生类对象正确析构
 
-    // JSON 值的类型枚举
-    enum class JSONType {
-        JSON_Null,  // 空值
-        JSON_Boolean,  // 布尔值
-        JSON_Number,  // 数值
-        JSON_String,  // 字符串
-        JSON_Array,  // 数组
-        JSON_Object  // 对象
-    };
+    void setvalueandtype(JSONVariant val, JSONType t); // 设置 JSON数据的值和类型
 
-    JSONValue(std::string& json); // 默认构造函数
-    virtual ~JSONValue() = default;
+    JSONType gettype() const; // 返回 JSON数据的类型
 
-    std::string_view get_JSONString() const; // 获取 JSON 字符串
+    const JSONVariant& getValue() const; // 返回 JSON数据的值
 
-    // 需要一个自行判断类别的接口，返回值可以是一个枚举类型
-    virtual JSONType getType() const; // 获取 JSON 值的类型,虚函数类型，需要有具体的JSON类实现判断方法
-
-    // 需要一个接口返回具体的值
-    virtual std::unique_ptr<JSONValue> asValue_of_JSON() const; // 将 JSON 值转换为布尔值
+    //重载输出运算符，方便调试
+    friend std::ostream& operator<<(std::ostream& os, const JSONValue& json);
 };
 
-// JSON 空值类，继承自 JSONValue
-class JSON_Null : public JSONValue
+
+
+
+// 布尔值类JSONBoolean
+class JSONBoolean : public JSONValue
 {
 public:
-    JSON_Null(std::string& json); // 构造函数 构造JSON_Null对象
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
+    JSONBoolean(bool b); // 构造函数，接受一个布尔值
 };
 
-// JSON 布尔值类，继承自 JSONValue
-class JSON_Boolean : public JSONValue
+// 数值类JSONNumber
+class JSONNumber : public JSONValue
 {
-private:
-    bool value; // 存储布尔值
 public:
-    JSON_Boolean(std::string& json ,bool val); // 构造函数 构造JSON_Boolean对象
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
+    JSONNumber(double num); // 构造函数，接受一个数值
 };
 
-// JSON 数值类，继承自 JSONValue
-class JSON_Number : public JSONValue
+// 字符串类JSONString
+class JSONString : public JSONValue
 {
-private:
-    double value; // 存储数值
 public:
-    JSON_Number(std::string& json , double val); // 构造函数 构造JSON_Number对象
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
+    JSONString(const std::string& str); // 构造函数，接受一个字符串
 };
 
-// JSON 字符串类，继承自 JSONValue
-class JSON_String : public JSONValue
+// 数组类JSONArray
+class JSONArray : public JSONValue
 {
-private:
-    std::string value; // 存储字符串
 public:
-    JSON_String(const std::string& val); // 构造函数 构造JSON_String对象
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
+    JSONArray(std::vector<std::unique_ptr<JSONValue>>& arr); // 构造函数，接受一个数组
+    void append(std::unique_ptr<JSONValue> value); // 向数组也就是（value值）中添加元素
 };
 
-// JSON 数组类，继承自 JSONValue
-class JSON_Array : public JSONValue
+// 对象类JSONObject
+class JSONObject : public JSONValue
 {
-private:
-    std::vector<std::unique_ptr<JSONValue>> values; // 存储JSON值元素的指针
 public:
-    JSON_Array(); // 构造函数 构造JSON_Array对象
-    bool addValue(std::unique_ptr<JSONValue> val); // 添加 JSON 值元素
-    bool removeValue(int index); // 根据下标移除 JSON 值元素
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
-    std::unique_ptr<JSONValue> operator[] (int index); // 重载下标运算符，根据下标访问数组元素
+    JSONObject(std::map<std::string , std::unique_ptr<JSONValue>>& obj); // 构造函数，接受一个对象
+    void insert(const std::string& key, std::unique_ptr<JSONValue> value); // 向对象也就是（value值）中添加键值对
 };
 
-// JSON 对象类，继承自 JSONValue
-class JSON_Object : public JSONValue
+// 空值类JSONNull
+class JSONNull : public JSONValue
 {
-private:
-    std::map<std::string, std::unique_ptr<JSONValue>> members; // 存储键值对，值为 JSON 值的指针
 public:
-    JSON_Object(); // 构造函数 构造JSON_Object对象
-    bool addMember(const std::string& key, std::unique_ptr<JSONValue> val); // 添加键值对
-    bool removeMember(const std::string& key); // 根据键移除键值对
-    JSONType getType() const override; // 获取 JSON 值的类型
-    std::unique_ptr<JSONValue> asValue_of_JSON() const override;
-    std::unique_ptr<JSONValue> operator[] (const std::string& key); // 重载下标运算符，根据键访问对象成员
+    JSONNull(); // 构造函数
 };

@@ -1,20 +1,21 @@
+#include "JSONparser.h"
 #include <iostream>
-#include "Tokenizer.h"
-#include "JSONValue.h"
-
-// 这是一个递归函数会递归调用自己来一层一层解析JSON字符串，直到最小单元的JSON对象被创建
-JSONValue& parseJSON(const std::string& jsonString) {
-    // 这里应该实现 JSON 解析的逻辑
-}
 
 int main() {
-    // 在这里输入文本的JSON原始字符串
-    std::string jsonString = R"({"name": "John", "age": 30, "isStudent": false, "courses": ["Math", "Science"], "address": {"city": "New York", "zip": "10001"}, "nullValue": null})";
-    // 令牌解析
-    Tokenizer tokenizer{};
-    // 语法解析
-    JsonParser parser{};
-    // 生成JSON对象
-    JSONValue& jsonValue = parseJSON(jsonString);
+    try{
+        std::string jsonStr_1 = R"({"name": "Alice", "age": 25, "isStudent": false, "scores": [88.5, 92, 79], "address": null,"ppp":{"hhh":9,"ttt":true}})";
+        std::string jsonStr_2 = R"(["name" , 19 , true , null , ["hhh",55] , {"sex":"boy" , "yyy":12}])";
+        JSONparser parser_1{jsonStr_1};
+        JSONparser parser_2{jsonStr_2};
+        auto jsonValue_1 = parser_1.parse_JSON();
+        auto jsonValue_2 = parser_2.parse_JSON();
+        std::cout << *jsonValue_1 << std::endl;
+        std::cout << *jsonValue_2 << std::endl;
+
+        // parser.preprocess_JSON(jsonStr); // 预处理（当前实现未做实际处理）
+    }
+    catch(char * e){
+        std::cout << "wrong is " << e << std::endl;
+    }
+    return 0;
 }
-// ...existing code...
