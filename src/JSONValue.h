@@ -41,13 +41,13 @@ using JSONVariant = std::variant<
 class JSONValue
 {
 private:
-    JSONVariant value; // JSON数据的值
-    JSONType type{JSONType::JSON_Void}; // JSON数据的类型
+    JSONVariant m_value; // JSON数据的值
+    JSONType m_type{JSONType::JSON_Void}; // JSON数据的类型
 public:
-    JSONValue(); // 默认构造函数
+    JSONValue(JSONVariant value , JSONType type); // 默认构造函数
     ~JSONValue() = default;  // 确保派生类对象正确析构
 
-    void setvalueandtype(JSONVariant val, JSONType t); // 设置 JSON数据的值和类型
+    // void setvalueandtype(JSONVariant val, JSONType t); // 设置 JSON数据的值和类型
 
     JSONType gettype() const; // 返回 JSON数据的类型
 
@@ -58,48 +58,48 @@ public:
 };
 
 
-
+// 空值类JSONNull
+class JSONNull : public JSONValue
+{
+public:
+    JSONNull(JSONVariant value  = std::monostate{}, JSONType type = JSON_Null); // 构造函数
+};
 
 // 布尔值类JSONBoolean
 class JSONBoolean : public JSONValue
 {
 public:
-    JSONBoolean(bool b); // 构造函数，接受一个布尔值
+    JSONBoolean(bool value,JSONType type = JSON_Boolean); // 构造函数，接受一个布尔值
 };
 
 // 数值类JSONNumber
 class JSONNumber : public JSONValue
 {
 public:
-    JSONNumber(double num); // 构造函数，接受一个数值
+    JSONNumber(double value , JSONType type = JSON_Number); // 构造函数，接受一个数值
 };
 
 // 字符串类JSONString
 class JSONString : public JSONValue
 {
 public:
-    JSONString(const std::string& str); // 构造函数，接受一个字符串
+    JSONString(const std::string& value , JSONType type = JSON_String); // 构造函数，接受一个字符串
 };
 
 // 数组类JSONArray
 class JSONArray : public JSONValue
 {
 public:
-    JSONArray(std::vector<std::unique_ptr<JSONValue>>& arr); // 构造函数，接受一个数组
+    JSONArray(std::vector<std::unique_ptr<JSONValue>>& value , JSONType type = JSON_Array); // 构造函数，接受一个数组
     void append(std::unique_ptr<JSONValue> value); // 向数组也就是（value值）中添加元素
+    JSONValue& operator[] (int index); // 返回对应的元素的引用
 };
 
 // 对象类JSONObject
 class JSONObject : public JSONValue
 {
 public:
-    JSONObject(std::map<std::string , std::unique_ptr<JSONValue>>& obj); // 构造函数，接受一个对象
+    JSONObject(std::map<std::string , std::unique_ptr<JSONValue>>& value , JSONType type = JSON_Object); // 构造函数，接受一个对象
     void insert(const std::string& key, std::unique_ptr<JSONValue> value); // 向对象也就是（value值）中添加键值对
-};
-
-// 空值类JSONNull
-class JSONNull : public JSONValue
-{
-public:
-    JSONNull(); // 构造函数
+    JSONValue& operator [](const std::string& key_str);  // 根据键值查找对象
 };
